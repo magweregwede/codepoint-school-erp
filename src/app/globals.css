@@ -1,26 +1,47 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-bg:           #f8fafc;
+  --color-surface:      #ffffff;
+  --color-surface-2:    #f1f5f9;
+  --color-border:       #e2e8f0;
+  --color-border-soft:  #eef2f6;
+
+  --color-text:         #0f172a;
+  --color-text-muted:   #64748b;
+  --color-text-soft:    #94a3b8;
+
+  --color-brand:        #1d4ed8;
+  --color-brand-soft:   #dbeafe;
+  --color-brand-fg:     #ffffff;
+
+  --color-success:      #15803d;
+  --color-success-soft: #dcfce7;
+  --color-warn:         #b45309;
+  --color-warn-soft:    #fef3c7;
+  --color-danger:       #b91c1c;
+  --color-danger-soft:  #fee2e2;
+  --color-info:         #1d4ed8;
+  --color-info-soft:    #dbeafe;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html, body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Print styles for receipts/payslips/report cards */
+@media print {
+  body { background: white; }
+  .no-print, nav.app-sidebar, header.app-topbar { display: none !important; }
+  .print-area { padding: 0 !important; }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+/* Subtle scrollbars */
+* { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
