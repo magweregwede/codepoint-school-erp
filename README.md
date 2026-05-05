@@ -51,29 +51,39 @@ The sidebar shows only the modules each role can access (RBAC per SRS §7).
 |---|---|
 | Framework | Next.js 16 (App Router, TypeScript) |
 | Auth | NextAuth (Auth.js v5) — Credentials provider |
-| ORM / DB | Prisma 7 + SQLite (better-sqlite3 adapter) |
+| ORM / DB | Prisma 7 + Postgres (pg adapter) — Neon for both local + prod |
 | UI | Tailwind CSS v4 + custom primitives |
 | Charts | Recharts |
 | Icons | Lucide |
 
 ## Running locally
 
-Prerequisite: Node.js 20 LTS or later.
+Prerequisites:
+- Node.js 20 LTS or later
+- A Postgres database. The free tier of [Neon](https://neon.tech) is the
+  fastest path — sign up, create a project, and copy the connection string
+  it gives you. The same connection string is used for local dev and Vercel.
 
 ```bash
-# install
+# 1. Install deps (also runs `prisma generate` via postinstall)
 npm install
 
-# generate Prisma client + create the SQLite DB
+# 2. Configure environment
+cp .env.example .env.local
+# Edit .env.local and paste your Neon DATABASE_URL.
+# Generate AUTH_SECRET with: openssl rand -base64 32
+
+# 3. Create tables in Neon
 npm run db:migrate
 
-# seed mock data (12 users, 60 employees, 582 students, 200 books, 150 assets,
-# fees, payroll, library loans, etc.)
+# 4. Seed mock data: 12 users, 60 employees, ~600 students, 200 books,
+#    150 assets, fee invoices + receipts, payroll runs, library loans,
+#    asset movements, audit log
 npm run db:seed
 
-# run the dev server
+# 5. Start the dev server
 npm run dev
-# open http://localhost:3000
+# Open http://localhost:3000
 ```
 
 To reset and re-seed at any time:
@@ -89,7 +99,7 @@ schoolerp/
 ├── prisma/
 │   ├── schema.prisma     # Data model for all 8 modules
 │   ├── seed.ts           # Mock data generator
-│   └── dev.db            # SQLite file (git-ignored)
+│   └── migrations/       # Postgres SQL migrations
 ├── prisma.config.ts      # Prisma 7 config (datasource URL)
 ├── src/
 │   ├── app/
@@ -111,7 +121,7 @@ schoolerp/
 │   ├── lib/
 │   │   ├── auth.ts               # NextAuth config
 │   │   ├── rbac.ts               # Roles + permission matrix from SRS §7
-│   │   ├── prisma.ts             # Prisma client singleton (better-sqlite3 adapter)
+│   │   ├── prisma.ts             # Prisma client singleton (pg adapter)
 │   │   ├── audit.ts              # Hash-chained audit logger
 │   │   ├── money.ts              # Currency / date formatters
 │   │   └── session.ts            # requireUser / requirePermission helpers
@@ -132,21 +142,27 @@ direct URL access is also blocked for unauthorised users (302 → `/forbidden`).
 
 ## Deploying to Vercel
 
-SQLite on Vercel serverless doesn't work — file storage is ephemeral. For
-production you have three good options:
+The project ships with a `vercel-build` script that runs `prisma migrate
+deploy && tsx prisma/seed.ts && next build`. So a fresh deploy will:
 
-1. **[Turso](https://turso.tech) (libSQL)** — drop-in replacement; swap the
-   Prisma adapter to `@prisma/adapter-libsql`. Free tier available.
-2. **[Neon](https://neon.tech) (Postgres)** — change Prisma `provider = "postgresql"`,
-   re-run `prisma migrate dev`. Free tier available.
-3. **Vercel Postgres** — provisioned from Vercel dashboard.
+1. Apply the migrations to the Postgres in `DATABASE_URL`
+2. Seed the mock data
+3. Build the Next.js app
 
-Set the relevant `DATABASE_URL` (and `DATABASE_AUTH_TOKEN` for Turso) in
-Vercel environment variables, plus an `AUTH_SECRET` (`openssl rand -base64 32`).
+Steps:
 
-```
-vercel deploy --prod
-```
+1. Create a Postgres database on [Neon](https://neon.tech) (free tier is fine).
+   Copy the connection string.
+2. `vercel deploy` (the CLI walks you through linking).
+3. In the Vercel project settings → **Environment Variables**, add:
+   - `DATABASE_URL` — your Neon connection string
+   - `AUTH_SECRET` — `openssl rand -base64 32`
+4. `vercel deploy --prod` to push to production.
+
+The seed script is idempotent (it deletes everything and re-creates) so don't
+re-run it accidentally on a populated production DB. After the first deploy,
+remove the `tsx prisma/seed.ts &&` segment from `vercel-build` if you want
+data to persist between deploys.
 
 ## License
 

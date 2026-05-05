@@ -2,13 +2,14 @@
 // Run with `npm run db:seed`.
 
 import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
 import { ROLE_DEFINITIONS } from '../src/lib/rbac';
 
-const dbUrl = process.env.DATABASE_URL ?? 'file:./prisma/dev.db';
+const dbUrl = process.env.DATABASE_URL;
+if (!dbUrl) throw new Error('DATABASE_URL is not set.');
 const prisma = new PrismaClient({
-  adapter: new PrismaBetterSqlite3({ url: dbUrl.replace(/^file:/, '') }),
+  adapter: new PrismaPg({ connectionString: dbUrl }),
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
