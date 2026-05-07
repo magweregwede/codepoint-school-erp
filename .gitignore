@@ -52,3 +52,9 @@ next-env.d.ts
 
 # SRS source unpack (kept locally for reference, not pushed)
 /_srs_unpacked
+
+# Local seed/build logs
+/seed.log
+/build.log
+
+.vercel
