@@ -143,11 +143,19 @@ direct URL access is also blocked for unauthorised users (302 → `/forbidden`).
 ## Deploying to Vercel
 
 The project ships with a `vercel-build` script that runs `prisma migrate
-deploy && tsx prisma/seed.ts && next build`. So a fresh deploy will:
+deploy && next build`. So a Vercel deploy will:
 
 1. Apply the migrations to the Postgres in `DATABASE_URL`
-2. Seed the mock data
-3. Build the Next.js app
+2. Build the Next.js app
+
+The seed step is **not** included in `vercel-build` (otherwise every deploy
+would wipe the database). After the first deploy, run `npm run db:seed` once
+locally with the production `DATABASE_URL` to populate the demo data:
+
+```bash
+vercel env pull .env.production --environment production
+DATABASE_URL=$(grep DATABASE_URL .env.production | cut -d= -f2- | tr -d '"') npm run db:seed
+```
 
 Steps:
 

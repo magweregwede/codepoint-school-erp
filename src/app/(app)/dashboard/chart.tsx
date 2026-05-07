@@ -12,7 +12,7 @@ export function DashboardChart({ data }: { data: { term: string; Invoiced: numbe
           <YAxis tick={{ fill: '#64748b', fontSize: 12 }} stroke="#cbd5e1" tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} />
           <Tooltip
             contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 12 }}
-            formatter={(v: number | string) => `$${Number(v).toLocaleString()}`}
+            formatter={(v) => `$${Number(v ?? 0).toLocaleString()}`}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
           <Bar dataKey="Invoiced"  fill="#94a3b8" radius={[4, 4, 0, 0]} />
